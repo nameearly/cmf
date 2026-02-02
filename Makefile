@@ -81,6 +81,8 @@ setup-minimal:
 setup: setup-minimal
 	# Initialize local git repo for development
 	cd $(cf_source_dir) && \
+		git config user.name "GitHub Actions" && \
+		git config user.email "soitun.fan@gmail.com" && \
 		git init -b main && \
 		git add -f -A && \
 		git commit -m "Initial commit" && \
