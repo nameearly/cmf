@@ -157,7 +157,7 @@ def get_screen_cons(headless: Optional[bool] = None) -> Optional[Screen]:
     """
     Determines a sane viewport size for Camoufox if being ran in headful mode.
     """
-    if headless is False:
+    if headless is not False:
         return None  # Skip if headless
     try:
         monitors = get_monitors()
@@ -503,7 +503,7 @@ def launch_options(
     # Generate a fingerprint
     if fingerprint is None:
         fingerprint = generate_fingerprint(
-            screen=screen or get_screen_cons(headless or 'DISPLAY' in env),
+            screen=screen or get_screen_cons(headless),
             window=window,
             os=os,
         )

@@ -77,29 +77,14 @@ class JsonValidator:
 
     def validate_groups(self, config_map: Dict[str, Any]) -> None:
         """Validates that grouped properties are all present or all absent."""
-        group_presence: Dict[str, bool] = {}
-
-        # Check which groups have any properties present
         for group, props in self.groups.items():
-            group_presence[group] = any(prop in config_map for prop in props)
-
-        # Validate group completeness
-        for group, is_present in group_presence.items():
-            props = self.groups[group]
-            if is_present:
-                # If any property in group exists, all must exist
-                missing = [prop for prop in props if prop not in config_map]
-                if missing:
-                    raise MissingGroupKey(
-                        f"Incomplete property group ${group}: missing {', '.join(missing)}"
-                    )
-            else:
-                # If no property in group exists, none should exist
-                present = [prop for prop in props if prop in config_map]
-                if present:
-                    raise MissingGroupKey(
-                        f"Incomplete property group ${group}: found {', '.join(present)} but missing {', '.join(set(props) - set(present))}"
-                    )
+            unique_props = list(dict.fromkeys(props))
+            present = [prop for prop in unique_props if prop in config_map]
+            if present and len(present) != len(unique_props):
+                missing = [prop for prop in unique_props if prop not in config_map]
+                raise MissingGroupKey(
+                    f"Incomplete property group ${group}: found {', '.join(present)} but missing {', '.join(missing)}"
+                )
 
 
 def validate_config(
@@ -158,11 +143,6 @@ def validate_config(
         if expected_type is None:
             expected_type = parse_type_def(type_def, local_registry)
         expected_type.validate(value, [key], local_registry)
-
-    # Check for missing required properties
-    missing_required = [key for key, found in required_props.items() if not found]
-    if missing_required:
-        raise MissingRequiredKey(f"Missing required properties: {', '.join(missing_required)}")
 
     # Check for missing required properties
     missing_required = [key for key, found in required_props.items() if not found]
